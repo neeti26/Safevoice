@@ -11,29 +11,70 @@ bot.use(session());
 bot.use(stage.middleware());
 require('./lib/knowRights').setupActions(bot);
 
-// Language Toggle
+// Language Menu
 bot.command('lang', (ctx) => {
+    ctx.reply('Please choose your language / कृपया अपनी भाषा चुनें / कृपया तुमची भाषा निवडा:',
+        Markup.inlineKeyboard([
+            [Markup.button.callback('English', 'set_lang_en')],
+            [Markup.button.callback('हिंदी (Hindi)', 'set_lang_hi')],
+            [Markup.button.callback('मराठी (Marathi)', 'set_lang_mr')]
+        ])
+    );
+});
+
+bot.action('set_lang_en', ctx => {
     ctx.session = ctx.session || {};
-    ctx.session.lang = ctx.session.lang === 'hi' ? 'en' : 'hi';
-    ctx.reply(ctx.session.lang === 'hi' ? 'भाषा बदलकर हिंदी कर दी गई है।' : 'Language changed to English.');
+    ctx.session.lang = 'en';
+    ctx.answerCbQuery();
+    ctx.reply('Language changed to English. Type /start to begin.');
+});
+bot.action('set_lang_hi', ctx => {
+    ctx.session = ctx.session || {};
+    ctx.session.lang = 'hi';
+    ctx.answerCbQuery();
+    ctx.reply('भाषा बदलकर हिंदी कर दी गई है। शुरू करने के लिए /start टाइप करें।');
+});
+bot.action('set_lang_mr', ctx => {
+    ctx.session = ctx.session || {};
+    ctx.session.lang = 'mr';
+    ctx.answerCbQuery();
+    ctx.reply('भाषा बदलून मराठी करण्यात आली आहे. सुरू करण्यासाठी /start टाइप करा.');
 });
 
 // /start - Main Menu
 bot.command('start', (ctx) => {
     ctx.session = ctx.session || { lang: 'hi' }; // Default to Hindi (Hinglish)
-    const hindi = ctx.session.lang === 'hi';
+    const lang = ctx.session.lang;
 
     // Reset any hanging state
     if (ctx.scene) ctx.scene.leave();
 
-    ctx.reply(hindi
-        ? 'मैं SafeVoice हूँ, असंगठित क्षेत्र की महिलाओं के लिए एक सुरक्षित साथी।\nआप क्या करना चाहेंगी?'
-        : 'I am SafeVoice, a safe companion for women in the unorganized sector.\nWhat would you like to do?',
+    let text = 'मैं SafeVoice हूँ, असंगठित क्षेत्र की महिलाओं के लिए एक सुरक्षित साथी।\nआप क्या करना चाहेंगी?\n(भाषा बदलने के लिए /lang टाइप करें)';
+    let btn1 = '🧭 POSH Compass (Pehle Jaanein)';
+    let btn2 = '📝 Shikayat Darj Karein (File Complaint)';
+    let btn3 = '⚖️ Apna Haq Jaanein (Know Your Rights)';
+    let btn4 = '🔍 Case Track Karein';
+
+    if (lang === 'en') {
+        text = 'I am SafeVoice, a safe companion for women in the unorganized sector.\nWhat would you like to do?\n(Type /lang to change language)';
+        btn1 = '🧭 POSH Compass (Know First)';
+        btn2 = '📝 File Complaint';
+        btn3 = '⚖️ Know Your Rights';
+        btn4 = '🔍 Track My Case';
+    } else if (lang === 'mr') {
+        text = 'मी SafeVoice आहे, असंगठित क्षेत्रातील महिलांसाठी एक सुरक्षित साथीदार.\nतुम्हाला काय करायचे आहे?\n(भाषा बदलण्यासाठी /lang टाइप करा)';
+        btn1 = '🧭 POSH Compass (पहिले जाणून घ्या)';
+        btn2 = '📝 तक्रार नोंदवा (File Complaint)';
+        btn3 = '⚖️ तुमचे हक्क जाणून घ्या';
+        btn4 = '🔍 केस ट्रॅक करा';
+    }
+
+    ctx.reply(text,
         Markup.inlineKeyboard([
-            [Markup.button.callback('🧭 POSH Compass (Pehle Jaanein)', 'menu_compass')],
-            [Markup.button.callback('📝 Shikayat Darj Karein (File Complaint)', 'menu_file')],
-            [Markup.button.callback('⚖️ Apna Haq Jaanein (Know Your Rights)', 'menu_rights')],
-            [Markup.button.callback('🔍 Case Track Karein', 'menu_track')]
+            [Markup.button.callback(btn1, 'menu_compass')],
+            [Markup.button.callback(btn2, 'menu_file')],
+            [Markup.button.callback(btn3, 'menu_rights')],
+            [Markup.button.callback(btn4, 'menu_track')]
         ])
     );
 });
