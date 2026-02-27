@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  bot:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - DB_URL=postgresql://poshuser:poshpass@db:5432/poshdb
+      - REDIS_URL=redis://redis:6379
+      - NODE_ENV=development
+      - ENCRYPTION_KEY=super_secret_encryption_key_AES_256
+      - ICC_ADMINS=${ICC_ADMINS:-123456789}
+      - BOT_TOKEN=${BOT_TOKEN}
+    depends_on:
+      - db
+      - redis
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+
+  db:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_USER=poshuser
+      - POSTGRES_PASSWORD=poshpass
+      - POSTGRES_DB=poshdb
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./schema.sql:/docker-entrypoint-initdb.d/init.sql
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+volumes:
+  postgres_data:
